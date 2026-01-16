@@ -1,0 +1,21 @@
+# Ignore local Java build artifacts
+**/target/
+**/out/
+**/*.jar
+
+# Ignore local Node/React artifacts
+**/node_modules/
+**/dist/
+**/build/
+
+# Ignore IDE settings and system files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Ignore Git and secrets
+.git
+.gitignore
+.env
