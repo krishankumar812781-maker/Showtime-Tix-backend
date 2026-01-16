@@ -2,6 +2,7 @@ package com.example.MovieBooking.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,15 +14,16 @@ import java.util.stream.Collectors;
 
 
 @Component
+@RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    @Value("${app.jwt-secret}")
+    @Value("${app.jwt-secret:0c9f42f1bfe0cf38aec9c1317834c83ac21af4762af434d7de0cff88837a20da}")
     private String jwtSecret;
 
-    @Value("${app.jwt-expiration-milliseconds}")
+    @Value("${app.jwt-expiration-milliseconds:900000}")
     private long jwtAccessExpirationMs; //acess token expiration
 
-    @Value("${app.jwt-refresh-expiration-milliseconds}")
+    @Value("${app.jwt-refresh-expiration-milliseconds:2592000000}")
     private long jwtRefreshExpirationMs; //refresh token expiration
 
     private SecretKey getSigningKey() {
