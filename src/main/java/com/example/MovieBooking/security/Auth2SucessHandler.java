@@ -24,7 +24,7 @@ public class Auth2SucessHandler implements AuthenticationSuccessHandler {
     public Auth2SucessHandler(@Lazy AuthService authService) {
         this.authService = authService;
     }
-    @Value("${app.redirect.url}")
+    @Value("${app.redirect.url:https://showtime-tix-frontend45.vercel.app}")
     private String redirectUrl;
 
     @Override
