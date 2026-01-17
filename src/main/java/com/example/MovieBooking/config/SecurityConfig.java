@@ -33,7 +33,7 @@ public class SecurityConfig {
     private final JwtAuthFilter authenticationFilter;
     private final Auth2SucessHandler auth2SucessHandler;
     private final HandlerExceptionResolver handlerExceptionResolver;
-    @Value("${frontend.url")
+    @Value("${frontend.url:https://showtime-tix-frontend45.vercel.app}")
     private String frontendUrl;
 
     @Bean
