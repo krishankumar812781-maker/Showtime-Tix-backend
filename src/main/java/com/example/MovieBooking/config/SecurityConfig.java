@@ -45,7 +45,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/login/**", "/oauth2/**","/favicon.ico").permitAll()
+                        .requestMatchers("/api/auth/**", "/login/**", "/oauth2/**","/favicon.ico","/api/public/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/movies/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/theaters/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/shows/**").permitAll()
