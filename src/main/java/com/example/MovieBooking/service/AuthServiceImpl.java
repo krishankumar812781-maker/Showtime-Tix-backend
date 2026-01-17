@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -219,6 +220,19 @@ public class AuthServiceImpl implements AuthService {
         };
     }
 
+    @Override
+    public UserResponseDto getCurrentUser() {
+        // 1. Hn kyuki ek baar andar anee ke baad to hum kahi sa bhi user information le sakte hai  SecurityContext sa
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 2. Extract details
+        String email = authentication.getName();
+        Set<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+
+        return new UserResponseDto(email, roles);
+    }
 
 
     @Override

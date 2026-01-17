@@ -34,6 +34,13 @@ public class AuthController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> getCurrentUser() {
+        // The Filter has already verified the cookie and set the SecurityContext
+        UserResponseDto userResponse = authService.getCurrentUser();
+        return ResponseEntity.ok(userResponse);
+    }
+
     // --- FIXED REFRESH ENDPOINT ---
     @PostMapping("/refresh")
     public ResponseEntity<String> refreshToken(@RequestBody RefreshTokenRequestDto refreshTokenRequestDto) {

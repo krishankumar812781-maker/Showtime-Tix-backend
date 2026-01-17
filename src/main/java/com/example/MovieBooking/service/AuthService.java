@@ -18,6 +18,8 @@ public interface AuthService {
 
     ResponseEntity<String> handleOAuth2LoginRequest(OAuth2User oAuth2User, String registrationId);
 
+    UserResponseDto getCurrentUser();
+
     ResponseEntity<String> logout();
 
 }
