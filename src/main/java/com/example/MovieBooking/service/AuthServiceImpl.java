@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -27,6 +28,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -224,6 +227,10 @@ public class AuthServiceImpl implements AuthService {
     public UserResponseDto getCurrentUser() {
         // 1. Hn kyuki ek baar andar anee ke baad to hum kahi sa bhi user information le sakte hai  SecurityContext sa
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Check specifically for anonymousUser string
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not Logged In");
+        }
 
         // 2. Extract details
         String email = authentication.getName();
