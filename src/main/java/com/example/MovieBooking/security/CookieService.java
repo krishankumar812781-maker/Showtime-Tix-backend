@@ -1,5 +1,4 @@
 package com.example.MovieBooking.security;
-
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
@@ -9,28 +8,34 @@ public class CookieService {
     public ResponseCookie createAccessTokenCookie(String token) {
         return ResponseCookie.from("accessToken", token)
                 .httpOnly(true)
-                .secure(false) // Set to true in Production with HTTPS
-                .path("/") // har api call ma cookie request ma a jaye
+                // ⚡ Must be true for Cross-Site (Vercel -> Render)
+                .secure(true)
+                .path("/")
                 .maxAge(3600) // 1 hour
-                .sameSite("Lax")
+                // ⚡ Required for cross-domain cookies
+                .sameSite("None")
                 .build();
     }
 
     public ResponseCookie createRefreshTokenCookie(String token) {
         return ResponseCookie.from("refreshToken", token)
                 .httpOnly(true)
-                .secure(false)
+                // ⚡ Must be true for Cross-Site (Vercel -> Render)
+                .secure(true)
                 .path("/")
                 .maxAge(604800) // 7 days
-                .sameSite("Lax")
+                // ⚡ Required for cross-domain cookies
+                .sameSite("None")
                 .build();
     }
 
     public ResponseCookie deleteCookie(String name) {
-        return ResponseCookie.from(name, null)
+        return ResponseCookie.from(name, "")
                 .httpOnly(true)
+                .secure(true)
                 .path("/")
                 .maxAge(0) // Expire immediately
+                .sameSite("None")
                 .build();
     }
 }
