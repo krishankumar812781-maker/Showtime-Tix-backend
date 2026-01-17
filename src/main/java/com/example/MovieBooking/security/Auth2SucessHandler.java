@@ -1,4 +1,5 @@
 package com.example.MovieBooking.security;
+
 import com.example.MovieBooking.service.AuthService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +25,9 @@ public class Auth2SucessHandler implements AuthenticationSuccessHandler {
     public Auth2SucessHandler(@Lazy AuthService authService) {
         this.authService = authService;
     }
-    @Value("${app.redirect.url:https://showtime-tix-frontend45.vercel.app}")
+
+    // ⚡ Added a default value to prevent NullPointerException if property is missing
+    @Value("${app.redirect.url:https://showtime-tix-frontend45.vercel.app/oauth2/callback}")
     private String redirectUrl;
 
     @Override
@@ -32,24 +35,43 @@ public class Auth2SucessHandler implements AuthenticationSuccessHandler {
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
 
-        // 1. Cast the authentication to get OAuth2 token and user details
-        OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
+        try {
+            // 1. Cast the authentication to get OAuth2 token and user details
+            OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
+            OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
-        // 2. tells which OAuth2 provider was used it is a String value(Google, Facebook, etc.)
-        String registrationId = token.getAuthorizedClientRegistrationId();
+            // 2. Determine provider (Google, GitHub, etc.)
+            String registrationId = token.getAuthorizedClientRegistrationId();
 
-        // 3. Call service (Service handles DB check and generates Cookies)
-        ResponseEntity<String> loginResponse = authService.handleOAuth2LoginRequest(oAuth2User, registrationId);
-        // now TRANSFER THE COOKIES from the ResponseEntity to the actual HttpServletResponse
-        List<String> cookies = loginResponse.getHeaders().get(HttpHeaders.SET_COOKIE);
-        if (cookies != null) {
-            for (String cookie : cookies) {
-                response.addHeader(HttpHeaders.SET_COOKIE, cookie);
+            // 3. Call service (Service handles DB check and generates Cookies)
+            // ⚡ This is where the 500 error usually happens if DB constraints are hit
+            ResponseEntity<String> loginResponse = authService.handleOAuth2LoginRequest(oAuth2User, registrationId);
+
+            // 4. TRANSFER THE COOKIES from the ResponseEntity to the actual HttpServletResponse
+            if (loginResponse.getStatusCode().is2xxSuccessful()) {
+                List<String> cookies = loginResponse.getHeaders().get(HttpHeaders.SET_COOKIE);
+                if (cookies != null) {
+                    for (String cookie : cookies) {
+                        response.addHeader(HttpHeaders.SET_COOKIE, cookie);
+                    }
+                }
+
+                // 5. SUCCESS REDIRECT
+                // We add a query param so React knows the login was successful
+                response.sendRedirect(redirectUrl + "?status=success");
+            } else {
+                // Handle logic-level failures (e.g. status 400 from service)
+                response.sendRedirect(redirectUrl + "?status=error&reason=logic_failure");
             }
-        }
 
-        // 5. SECURE REDIRECT: Redirect to React without tokens in the URL
-        response.sendRedirect(redirectUrl);
+        } catch (Exception e) {
+            // ⚡ THE FINAL FIX: Catch any crash (DB, NullPointer, etc.)
+            // and redirect to Vercel instead of showing a 500 error page.
+            System.err.println("CRITICAL OAUTH2 ERROR: " + e.getMessage());
+            e.printStackTrace();
+
+            // Send back to frontend with error so the UI can show a toast/alert
+            response.sendRedirect(redirectUrl + "?status=error&reason=server_crash");
+        }
     }
 }
