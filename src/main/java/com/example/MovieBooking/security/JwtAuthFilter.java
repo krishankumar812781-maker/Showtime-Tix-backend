@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie; // Added for cookie handling
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
@@ -40,6 +42,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             // Now fetches token from Cookie instead of just the Header
             String token = getJwtFromRequest(request);
+            // Log whether token was found or not
+            if (token == null) {
+                log.warn("No JWT token found in cookies for request: {}", request.getRequestURI());
+            } else {
+                log.info("JWT token found in cookies for request: {}", request.getRequestURI());
+            }
 
             if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
                 // Token is valid, set authentication in context
