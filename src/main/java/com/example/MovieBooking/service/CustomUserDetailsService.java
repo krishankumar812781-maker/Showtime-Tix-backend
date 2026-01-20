@@ -31,7 +31,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         // Check if the user is a Social-Only user
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             // Throw a custom exception that the controller/handler can catch
-            throw new OAuth2UserException("This account is linked with " + user.getAuthProvider() + ". Please login using Social Login.");
+            throw new OAuth2UserException("This account is linked with " + user.getProviderType() + ". Please login using Social Login.");
         }
 
         // 2. Convert your Set<Role> into a Set<GrantedAuthority>
