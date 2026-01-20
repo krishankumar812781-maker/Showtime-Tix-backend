@@ -78,7 +78,17 @@ public class SecurityConfig {
 
         config.setAllowedOrigins(List.of(frontendUrl)); //only this domain is allowed to access the resources
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Cookie",
+                "X-Requested-With",
+                "Accept",
+                "Origin",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers"
+        ));
+        //config.setAllowedHeaders(List.of("*"));
         // allow the browser to see the "Set-Cookie" header
         config.setExposedHeaders(List.of("Set-Cookie"));
         config.setAllowCredentials(true);
