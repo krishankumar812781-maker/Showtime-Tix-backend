@@ -12,8 +12,6 @@ import com.example.MovieBooking.security.JwtTokenProvider;
 import com.example.MovieBooking.security.CookieService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -31,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
         user.setUsername(registerDto.getUsername());
         user.setEmail(registerDto.getEmail());
         user.setPassword(passwordEncoder.encode(registerDto.getPassword()));
-        user.setAuthProvider(AuthProvider.LOCAL);
+        user.setProviderType(AuthProvider.LOCAL);
 
         Set<Role> roles = new HashSet<>();
         if (registerDto.getRoles() != null && !registerDto.getRoles().isEmpty()) {
@@ -147,7 +145,7 @@ public class AuthServiceImpl implements AuthService {
 
         String providerId = switch (registrationId.toLowerCase()) {
             case "google" -> (String) oAuth2User.getAttribute("sub");
-            case "github", "facebook", "discord" -> oAuth2User.getAttribute("id").toString();
+            case "github" -> Objects.requireNonNull(oAuth2User.getAttribute("id")).toString();
             default -> throw new IllegalArgumentException("Unsupported provider: " + registrationId);
         };
 
@@ -159,18 +157,18 @@ public class AuthServiceImpl implements AuthService {
             user = userRepository.findByEmail(email).orElse(null);
             if (user != null) {
                 user.setProviderId(providerId);
-                user.setAuthProvider(providerType);
+                user.setProviderType(providerType);
                 user = userRepository.save(user);
             }
         }
 
+        //sign-up flow
         if (user == null) {
             user = new User();
             user.setEmail(email != null ? email : providerId + "@" + registrationId.toLowerCase() + ".com");
             user.setUsername(determineUsernameFromOAuth2User(oAuth2User, registrationId, providerId));
-            user.setAuthProvider(providerType);
+            user.setProviderType(providerType);
             user.setProviderId(providerId);
-            // ⚡ CHANGED: Set to null to avoid constraints on empty strings
             user.setPassword(null);
             user.setRoles(Set.of(Role.ROLE_USER));
             user = userRepository.save(user);

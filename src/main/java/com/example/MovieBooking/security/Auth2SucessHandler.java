@@ -4,6 +4,7 @@ import com.example.MovieBooking.service.AuthService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 
 @Component
+@Slf4j
 public class Auth2SucessHandler implements AuthenticationSuccessHandler {
 
     private final AuthService authService;
@@ -65,10 +67,7 @@ public class Auth2SucessHandler implements AuthenticationSuccessHandler {
             }
 
         } catch (Exception e) {
-            // ⚡ THE FINAL FIX: Catch any crash (DB, NullPointer, etc.)
-            // and redirect to Vercel instead of showing a 500 error page.
-            System.err.println("CRITICAL OAUTH2 ERROR: " + e.getMessage());
-            e.printStackTrace();
+            log.error("OAuth2 Login Failed: {}", e.getMessage(), e);
 
             // Send back to frontend with error so the UI can show a toast/alert
             response.sendRedirect(redirectUrl + "?status=error&reason=server_crash");

@@ -36,6 +36,7 @@ public class User {
     private String email;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AuthProvider providerType;
 
     private String providerId;
@@ -56,10 +57,6 @@ public class User {
 
     private Instant refreshTokenExpiry;
 
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false) //kuch nahi to Local to hoga
-    private AuthProvider authProvider;
 
     //Relationships
     @OneToMany(
