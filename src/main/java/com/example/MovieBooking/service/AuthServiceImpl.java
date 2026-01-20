@@ -162,7 +162,7 @@ public class AuthServiceImpl implements AuthService {
             }
         }
 
-        //sign-up flow
+        // sign-up flow
         if (user == null) {
             user = new User();
             user.setEmail(email != null ? email : providerId + "@" + registrationId.toLowerCase() + ".com");
@@ -170,7 +170,11 @@ public class AuthServiceImpl implements AuthService {
             user.setProviderType(providerType);
             user.setProviderId(providerId);
             user.setPassword(null);
-            user.setRoles(Set.of(Role.ROLE_USER));
+            // ⚡ FIX: Use new HashSet instead of Set.of to avoid UnsupportedOperationException
+            Set<Role> roles = new HashSet<>();
+            roles.add(Role.ROLE_USER);
+            user.setRoles(roles);
+
             user = userRepository.save(user);
         }
 
@@ -187,6 +191,7 @@ public class AuthServiceImpl implements AuthService {
                 .header(HttpHeaders.SET_COOKIE, cookieService.createRefreshTokenCookie(refreshToken).toString())
                 .body("OAuth2 login successful.");
     }
+
 
     public String determineUsernameFromOAuth2User(OAuth2User oAuth2User, String registrationId, String providerId) {
         String email = oAuth2User.getAttribute("email");

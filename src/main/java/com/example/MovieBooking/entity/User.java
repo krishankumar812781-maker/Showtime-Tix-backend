@@ -36,7 +36,6 @@ public class User {
     private String email;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private AuthProvider providerType;
 
     private String providerId;
