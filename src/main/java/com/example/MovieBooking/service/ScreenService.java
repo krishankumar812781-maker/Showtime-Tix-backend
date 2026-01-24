@@ -4,11 +4,11 @@ import com.example.MovieBooking.dto.RequestDto.ScreenRequestDto;
 import com.example.MovieBooking.dto.ScreenResponseDto;
 import com.example.MovieBooking.entity.Screen;
 import com.example.MovieBooking.entity.Theater;
-import com.example.MovieBooking.repository.ScreenRepository;
-import com.example.MovieBooking.repository.TheaterRepository;
+import com.example.MovieBooking.repository.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +18,15 @@ public class ScreenService {
 
     @Autowired
     private ScreenRepository screenRepository;
+
+    @Autowired
+    private ShowRepository showRepository;
+
+    @Autowired
+    private ShowSeatRepository showSeatRepository;
+
+    @Autowired
+    private SeatRepository seatRepository;
 
     @Autowired
     private TheaterRepository theaterRepository;
@@ -57,6 +66,30 @@ public class ScreenService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void deleteScreen(Long id) {
+        Screen screen = screenRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Screen not found"));
+
+        // 1. Safety Check: Are there any seats currently Booked, Locked, or on Hold?
+        if (showRepository.existsByScreenIdAndActiveBookings(id)) {
+            throw new RuntimeException("Cannot delete screen: It has shows with active bookings or pending payments.");
+        }
+
+        // 2. Cascade Delete in correct order for Database Integrity
+
+        // Step A: Remove ShowSeats (Linked to specific show timings)
+        showSeatRepository.deleteByShowScreenId(id);
+
+        // Step B: Remove Shows (The movie timings themselves)
+        showRepository.deleteByScreenId(id);
+
+        // Step C: Remove Seats (The physical layout of the screen)
+        seatRepository.deleteByScreenId(id);
+
+        // Step D: Remove the Screen
+        screenRepository.delete(screen);
+    }
     /**
      * Helper method to map a Screen entity to its response DTO.
      * We can safely use ModelMapper here.

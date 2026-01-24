@@ -2,6 +2,7 @@ package com.example.MovieBooking.repository;
 
 import com.example.MovieBooking.entity.Show;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -39,6 +40,14 @@ public interface ShowRepository extends JpaRepository<Show, Long> {
             @Param("end") LocalDateTime end
     );
 
+    // ⚡ Check if any show on this screen has seats that are NOT "AVAILABLE"
+    @Query("SELECT COUNT(s) > 0 FROM Show s JOIN s.showSeat ss " +
+            "WHERE s.screen.id = :screenId AND ss.status != 'AVAILABLE'")
+    boolean existsByScreenIdAndActiveBookings(@Param("screenId") Long screenId);
+
+    @Modifying
+    @Query("DELETE FROM Show s WHERE s.screen.id = :screenId")
+    void deleteByScreenId(@Param("screenId") Long screenId);
 
     // 4. Find shows for any movie within a specific time range
     List<Show> findByStartTimeBetween(LocalDateTime start, LocalDateTime end);

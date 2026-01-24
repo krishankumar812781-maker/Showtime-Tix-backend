@@ -39,4 +39,15 @@ public class ScreenController {
         List<ScreenResponseDto> screens = screenService.getScreensByTheater(theaterId);
         return ResponseEntity.ok(screens);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteScreen(@PathVariable Long id) {
+        try {
+            screenService.deleteScreen(id);
+            return ResponseEntity.ok("Screen deleted successfully");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
+    }
 }

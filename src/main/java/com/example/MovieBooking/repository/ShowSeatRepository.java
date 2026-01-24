@@ -51,4 +51,10 @@ public interface ShowSeatRepository extends JpaRepository<ShowSeat,Long> {
     Optional<ShowSeat> findByIdAndLock(@Param("id") Long id);
 
     List<ShowSeat> findByBookingId(Long id);
+
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM ShowSeat ss WHERE ss.show.screen.id = :screenId")
+    void deleteByShowScreenId(@Param("screenId") Long screenId);
 }
